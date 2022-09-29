@@ -13,8 +13,7 @@ public:
 	// Program ID
 	unsigned int	ID;
 
-	Shader() {};
-	void initShader(const GLchar* vertexPath, const GLchar* FragmentPath)
+	Shader(const GLchar* vertexPath, const GLchar* FragmentPath)
 	{
 		std::string	vertexCode, fragmentCode;
 		std::ifstream	vShaderFile, fShaderFile;
@@ -49,21 +48,18 @@ public:
 		vertex = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(vertex, 1, &vShader, NULL);
 		glCompileShader(vertex);
-		std::cout << "VERTEX SHADER : ";
-		check_shader(vertex);
+		checkCompileErrors(vertex, "VERTEX");
 
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fShader, NULL);
 		glCompileShader(fragment);
-		std::cout << "FRAGMENT SHADER : ";
-		check_shader(fragment);
+		checkCompileErrors(fragment, "FRAGMENT");
 
 		ID = glCreateProgram();
 		glAttachShader(ID, vertex);
 		glAttachShader(ID, fragment);
 		glLinkProgram(ID);
-		std::cout << "PROGRAM : ";
-		check_program();
+		checkCompileErrors(ID, "PROGRAM");
 
 		glDeleteShader(vertex);
 		glDeleteShader(fragment);
@@ -71,33 +67,29 @@ public:
 	~Shader()
 	{ glDeleteProgram(ID); }
 
-	void	check_shader(unsigned int shader)
-	{
-		int  success;
-		char infoLog[512];
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-		if(!success)
-		{
-			glGetShaderInfoLog(shader, 512, NULL, infoLog);
-			std::cout << "ERROR::COMPILATION_FAILED\n" << infoLog << std::endl;
-		}
-		else
-			std::cout << "SUCCESS" << std::endl;
+	void checkCompileErrors(GLuint shader, std::string type)
+    {
+        GLint success;
+        GLchar infoLog[1024];
+        if (type != "PROGRAM")
+        {
+            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+            if (!success)
+            {
+                glGetShaderInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            }
+        }
+        else
+        {
+            glGetProgramiv(shader, GL_LINK_STATUS, &success);
+            if (!success)
+            {
+                glGetProgramInfoLog(shader, 1024, NULL, infoLog);
+                std::cout << "ERROR::PROGRAM_LINKING_ERROR of type: " << type << "\n" << infoLog << "\n -- --------------------------------------------------- -- " << std::endl;
+            }
+        }
 	}
-
-	void	check_program(void)
-	{
-		int  success;
-		char infoLog[512];
-		glGetProgramiv(ID, GL_COMPILE_STATUS, &success);
-		if(!success)
-		{
-			glGetProgramInfoLog(ID, 512, NULL, infoLog);
-			std::cout << "ERROR::COMPILATION_FAILED\n" << infoLog << std::endl;
-		}
-		else
-			std::cout << "SUCCESS" << std::endl;
-	};
 
 	void	use()
 	{ glUseProgram(ID); };
@@ -108,6 +100,8 @@ public:
 	{ glUniform1i(glGetUniformLocation(ID, name.c_str()), value); };
 	void	setFloat(const std::string &name, float value) const
 	{ glUniform1f(glGetUniformLocation(ID, name.c_str()), value); };
+	void	setVec3(const std::string &name, glm::vec3 value) const
+	{ glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value)); };
 	void	setMat4(const std::string &name, glm::mat4 value) const
 	{ glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value)); };
 };

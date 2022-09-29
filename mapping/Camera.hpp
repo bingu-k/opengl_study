@@ -48,7 +48,7 @@ public:
 	glm::mat4	getCamView(void)
 	{ return (glm::lookAt(position, position + direction, worldUp)); };
 
-	bool	pressKeyBoard(Movement dir,float deltaTime)
+	bool	ProcessKeyboard(Movement dir,float deltaTime)
 	{
 		float	velocity = moveSpeed * deltaTime;
 		if(dir == FORWARD)
@@ -64,7 +64,7 @@ public:
 		return (true);
 	};
 
-	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
+	void	ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
     {
         xoffset *= moveSensitivity;
         yoffset *= moveSensitivity;
@@ -81,7 +81,7 @@ public:
         updateCamera();
     }
 
-    void ProcessMouseScroll(float yoffset)
+    void	ProcessMouseScroll(float yoffset)
     {
         zoom -= static_cast<float>(yoffset);
         if (zoom < 1.0f)
